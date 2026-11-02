@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17181A">
+<title>Programa Câmera MS008</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#17181A; --steel:#E6E8EB; --card:#F7F8F9; --line:#C9CDD2; --mute:#626870;
+  --red:#E80020; --gold:#F2B705; --sky:#5BB7F0; --flamingo:#F2706E;
+  --cond:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--ink)}
+body{font-family:var(--body);background:var(--steel);color:var(--ink);min-height:100vh;
+  padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+
+/* Hero */
+.hero{background:var(--ink);color:#fff;padding:calc(18px + env(safe-area-inset-top,0px)) 20px 0;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:8px;
+  background:repeating-linear-gradient(-45deg,var(--gold) 0 14px,var(--ink) 14px 28px)}
+.hero-row{display:flex;align-items:center;gap:14px;max-width:760px;margin:0 auto;padding-bottom:30px}
+.hero svg{flex:0 0 auto;width:132px;height:132px}
+.hero h1{font-family:var(--cond);font-weight:800;font-size:2.35rem;line-height:.95;letter-spacing:.01em}
+.hero h1 span{display:block;color:var(--gold);font-size:1.15rem;font-weight:700;margin-bottom:6px;letter-spacing:.04em}
+.hero p{margin-top:10px;font-size:.88rem;color:#B8BDC4;max-width:30ch;line-height:1.35}
+
+/* Verificações */
+.checks{max-width:760px;margin:-1px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  background:var(--card);border-bottom:1px solid var(--line)}
+.check{padding:14px 8px 12px;text-align:center;font-size:.78rem;font-weight:600;line-height:1.2;
+  border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:6px}
+.check:last-child{border-right:0}
+.check svg{width:38px;height:38px}
+
+main{max-width:760px;margin:0 auto;padding:18px 16px}
+.bar{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+.search{flex:1;position:relative}
+.search input{width:100%;height:50px;border-radius:12px;border:2px solid var(--line);background:#fff;
+  padding:0 14px;font:600 1.05rem var(--body);color:var(--ink)}
+.search input:focus{border-color:var(--ink);outline:none}
+.count{font-family:var(--cond);font-weight:700;font-size:1.1rem;color:var(--mute);white-space:nowrap}
+
+/* Cartões de programa */
+.list{display:grid;gap:12px}
+.prog{display:grid;grid-template-columns:64px 1fr 48px;background:var(--card);border-radius:14px;
+  border:2px solid var(--line);overflow:hidden;text-align:left;width:100%}
+.prog:active{border-color:var(--red)}
+.num{background:var(--ink);color:var(--gold);font-family:var(--cond);font-weight:800;font-size:2rem;
+  display:flex;align-items:center;justify-content:center;border-right:5px solid var(--red)}
+.info{padding:12px 14px;min-width:0}
+.code{font-family:var(--cond);font-weight:800;font-size:2.15rem;line-height:1;letter-spacing:.01em;word-break:break-all}
+.note{margin-top:6px;font-size:.85rem;color:var(--mute);line-height:1.3}
+.edit{display:flex;align-items:center;justify-content:center;color:var(--mute);border-left:1px solid var(--line)}
+.edit svg{width:20px;height:20px}
+.empty{text-align:center;padding:40px 20px;color:var(--mute);font-weight:500}
+
+/* Botões */
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  background:var(--red);color:#fff;font-family:var(--cond);font-weight:800;font-size:1.35rem;
+  height:58px;padding:0 28px;border-radius:30px;box-shadow:0 6px 18px rgba(232,0,32,.4);z-index:5}
+.tools{display:flex;gap:10px;margin-top:22px}
+.tools button{flex:1;height:44px;border:2px solid var(--line);border-radius:10px;font-weight:600;font-size:.9rem;background:var(--card)}
+
+/* Diálogos */
+dialog{border:0;border-radius:18px;width:min(92vw,460px);padding:0;margin:auto;color:var(--ink);background:var(--card)}
+dialog::backdrop{background:rgba(23,24,26,.72)}
+.viewer{text-align:center}
+.viewer .top{background:var(--ink);color:var(--gold);padding:14px;font-family:var(--cond);font-weight:700;font-size:1.2rem;
+  border-bottom:6px solid var(--red)}
+.viewer .big{font-family:var(--cond);font-weight:800;font-size:clamp(3.4rem,17vw,5.2rem);line-height:1;
+  padding:34px 12px 18px;word-break:break-all}
+.viewer .vnote{padding:0 20px 18px;color:var(--mute)}
+.actions{display:flex;gap:10px;padding:0 16px 16px}
+.actions button{flex:1;height:50px;border-radius:12px;font-weight:700;border:2px solid var(--line);background:#fff}
+.actions .main{background:var(--ink);color:#fff;border-color:var(--ink)}
+.actions .danger{color:var(--red);border-color:var(--red)}
+form{padding:20px 18px 6px}
+form h2{font-family:var(--cond);font-weight:800;font-size:1.6rem;margin-bottom:14px}
+label{display:block;font-weight:600;font-size:.9rem;margin:12px 0 5px}
+input.f,textarea.f{width:100%;border:2px solid var(--line);border-radius:10px;background:#fff;padding:11px 12px;
+  font:600 1.1rem var(--body);color:var(--ink)}
+input.f:focus,textarea.f:focus{border-color:var(--ink);outline:none}
+textarea.f{font-weight:400;font-size:1rem;resize:vertical;min-height:70px}
+.hint{font-size:.8rem;color:var(--mute);margin-top:4px}
+.toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-50%) translateY(-90px);
+  background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-weight:600;transition:transform .25s;z-index:20;
+  border-left:6px solid var(--gold)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+@media (max-width:380px){.hero svg{width:100px;height:100px}.hero h1{font-size:2rem}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-row">
+    <!-- Câmera olhando a porca na mesa do carrossel -->
+    <svg viewBox="0 0 132 132" role="img" aria-label="Câmera inspecionando uma porca">
+      <rect x="40" y="6" width="52" height="34" rx="7" fill="#2C2F33" stroke="#F2B705" stroke-width="3"/>
+      <circle cx="66" cy="23" r="10" fill="#17181A" stroke="#5BB7F0" stroke-width="3"/>
+      <circle cx="66" cy="23" r="3.5" fill="#E80020"/>
+      <path d="M52 40 L22 84 M80 40 L110 84" stroke="#5BB7F0" stroke-width="2" stroke-dasharray="4 4" opacity=".8"/>
+      <ellipse cx="66" cy="108" rx="58" ry="20" fill="#2C2F33"/>
+      <polygon points="66,86 88,98 88,118 66,130 44,118 44,98" fill="#C9CDD2" transform="scale(1,.72) translate(0,38)"/>
+      <ellipse cx="66" cy="105" rx="8" ry="5.5" fill="#17181A"/>
+      <g stroke="#F2B705" stroke-width="3.5" fill="none" stroke-linecap="round">
+        <path d="M20 84 v-9 h9"/><path d="M112 84 v-9 h-9"/>
+        <path d="M20 126 v9"/><path d="M112 126 v9"/>
+      </g>
+    </svg>
+    <div>
+      <h1><span>Carrossel · Solda</span>Programa Câmera MS008</h1>
+      <p>Códigos dos programas da câmera de inspeção das porcas.</p>
+    </div>
+  </div>
+</header>
+
+<section class="checks" aria-label="O que a câmera confere">
+  <div class="check">
+    <svg viewBox="0 0 40 40" fill="none" stroke="#17181A" stroke-width="2.6" stroke-linejoin="round">
+      <polygon points="20,5 33,12.5 33,27.5 20,35 7,27.5 7,12.5"/><circle cx="20" cy="20" r="5"/>
+    </svg>
+    Porca presente
+  </div>
+  <div class="check">
+    <svg viewBox="0 0 40 40" fill="none" stroke="#17181A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="20,8 31,14 31,26 20,32 9,26 9,14"/>
+      <path d="M6 34 C6 20 14 14 30 12 M30 12 l-5 -4 M30 12 l-4 5" stroke="#E80020"/>
+    </svg>
+    Porca invertida
+  </div>
+  <div class="check">
+    <svg viewBox="0 0 40 40" fill="none" stroke="#17181A" stroke-width="2.6" stroke-linejoin="round">
+      <polygon points="12,6 21,11 21,21 12,26 3,21 3,11"/>
+      <polygon points="28,14 37,19 37,29 28,34 19,29 19,19" stroke="#E80020"/>
+    </svg>
+    Duas porcas coladas
+  </div>
+</section>
+
+<main>
+  <div class="bar">
+    <div class="search">
+      <input id="q" type="search" inputmode="search" placeholder="Buscar programa (ex.: 65.38)" aria-label="Buscar programa" autocomplete="off">
+    </div>
+    <div class="count" id="count"></div>
+  </div>
+  <div class="list" id="list"></div>
+  <div class="tools">
+    <button id="exp">Salvar backup</button>
+    <button id="imp">Abrir backup</button>
+    <input id="file" type="file" accept="application/json" hidden>
+  </div>
+</main>
+
+<button class="fab" id="add">+ Novo programa</button>
+
+<!-- Visor grande -->
+<dialog id="viewer">
+  <div class="viewer">
+    <div class="top" id="vtop"></div>
+    <div class="big" id="vcode"></div>
+    <div class="vnote" id="vnote"></div>
+    <div class="actions">
+      <button id="vedit">Editar</button>
+      <button id="vclose" class="main">Fechar</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Formulário -->
+<dialog id="editor">
+  <form id="form" method="dialog">
+    <h2 id="ftitle">Novo programa</h2>
+    <label for="fnum">Número</label>
+    <input class="f" id="fnum" type="text" inputmode="numeric" required maxlength="3" placeholder="09">
+    <label for="fcode">Código do programa</label>
+    <input class="f" id="fcode" type="text" required maxlength="24" placeholder="65.38_39.00" autocapitalize="off">
+    <p class="hint">Escreva igual aparece na câmera. O "_" separa duas peças (ex.: 65.38_39).</p>
+    <label for="fnote">Observação (opcional)</label>
+    <textarea class="f" id="fnote" maxlength="200" placeholder="Ex.: peça com 5 porcas"></textarea>
+    <div class="actions" style="padding:18px 0 16px">
+      <button type="button" id="fdel" class="danger" hidden>Excluir</button>
+      <button type="button" id="fcancel">Cancelar</button>
+      <button type="submit" class="main">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  var KEY="programa-camera-ms008";
+  var DEFAULTS=[
+    {n:"01",code:"65.38_39.00",note:""},
+    {n:"02",code:"65.81_82.00",note:""},
+    {n:"03",code:"65.202.00",note:""},
+    {n:"04",code:"01.298.00",note:""},
+    {n:"05",code:"65.20_21.00",note:""},
+    {n:"06",code:"68.49.00",note:""},
+    {n:"07",code:"65.201.00",note:""},
+    {n:"08",code:"01.418.00",note:""}
+  ];
+  var items=load();
+  var editing=null; // índice em edição
+  var $=function(id){return document.getElementById(id)};
+  var list=$("list"), q=$("q");
+
+  function load(){
+    try{
+      var raw=localStorage.getItem(KEY);
+      if(raw){var a=JSON.parse(raw); if(Array.isArray(a)) return a;}
+    }catch(e){}
+    return DEFAULTS.map(function(x){return Object.assign({},x)});
+  }
+  function save(){
+    try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){toast("Não foi possível salvar neste aparelho")}
+  }
+  function toast(msg){
+    var t=$("toast"); t.textContent=msg; t.classList.add("on");
+    clearTimeout(toast.h); toast.h=setTimeout(function(){t.classList.remove("on")},2200);
+  }
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+  function sorted(){
+    return items.map(function(x,i){return{x:x,i:i}}).sort(function(a,b){
+      return parseInt(a.x.n,10)-parseInt(b.x.n,10)||a.x.code.localeCompare(b.x.code);
+    });
+  }
+  var pencil='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
+
+  function render(){
+    var term=q.value.trim().toLowerCase().replace(/\s+/g,"");
+    var rows=sorted().filter(function(r){
+      if(!term) return true;
+      return (r.x.code+r.x.n+r.x.note).toLowerCase().replace(/\s+/g,"").indexOf(term)>-1;
+    });
+    $("count").textContent=rows.length+" de "+items.length;
+    if(!rows.length){
+      list.innerHTML='<div class="empty">'+(items.length?"Nenhum programa encontrado.":"Nenhum programa ainda. Toque em “Novo programa”.")+'</div>';
+      return;
+    }
+    list.innerHTML=rows.map(function(r){
+      return '<div class="prog" role="group">'+
+        '<button class="num" data-view="'+r.i+'" aria-label="Abrir programa '+esc(r.x.n)+'">'+esc(r.x.n)+'</button>'+
+        '<button class="info" data-view="'+r.i+'"><div class="code">'+esc(r.x.code)+'</div>'+
+        (r.x.note?'<div class="note">'+esc(r.x.note)+'</div>':'')+'</button>'+
+        '<button class="edit" data-edit="'+r.i+'" aria-label="Editar programa '+esc(r.x.n)+'">'+pencil+'</button></div>';
+    }).join("");
+  }
+
+  function openView(i){
+    var it=items[i]; if(!it) return;
+    editing=i;
+    $("vtop").textContent="Programa "+it.n+" · MS008";
+    $("vcode").textContent=it.code;
+    $("vnote").textContent=it.note||"";
+    $("viewer").showModal();
+  }
+  function openEdit(i){
+    editing=(typeof i==="number")?i:null;
+    var it=editing!==null?items[editing]:null;
+    $("ftitle").textContent=it?"Editar programa":"Novo programa";
+    $("fnum").value=it?it.n:nextNum();
+    $("fcode").value=it?it.code:"";
+    $("fnote").value=it?it.note:"";
+    $("fdel").hidden=!it;
+    $("editor").showModal();
+    setTimeout(function(){$("fcode").focus()},50);
+  }
+  function nextNum(){
+    var m=0; items.forEach(function(x){var v=parseInt(x.n,10); if(v>m)m=v});
+    return String(m+1).padStart(2,"0");
+  }
+
+  list.addEventListener("click",function(e){
+    var v=e.target.closest("[data-view]"), d=e.target.closest("[data-edit]");
+    if(d) openEdit(+d.dataset.edit); else if(v) openView(+v.dataset.view);
+  });
+  q.addEventListener("input",render);
+  $("add").addEventListener("click",function(){openEdit()});
+  $("vclose").addEventListener("click",function(){$("viewer").close()});
+  $("vedit").addEventListener("click",function(){var i=editing;$("viewer").close();openEdit(i)});
+  $("fcancel").addEventListener("click",function(){$("editor").close()});
+  $("fdel").addEventListener("click",function(){
+    if(editing===null) return;
+    if(confirm("Excluir o programa "+items[editing].n+" ("+items[editing].code+")?")){
+      items.splice(editing,1); save(); render(); $("editor").close(); toast("Programa excluído");
+    }
+  });
+  $("form").addEventListener("submit",function(e){
+    e.preventDefault();
+    var n=$("fnum").value.trim(), c=$("fcode").value.trim(), t=$("fnote").value.trim();
+    if(!n||!c) return;
+    if(/^\d$/.test(n)) n="0"+n;
+    var dup=items.some(function(x,i){return i!==editing && x.code.toLowerCase()===c.toLowerCase()});
+    if(dup){toast("Esse código já está na lista");return}
+    var obj={n:n,code:c,note:t};
+    if(editing!==null) items[editing]=obj; else items.push(obj);
+    save(); render(); $("editor").close(); toast("Programa salvo");
+  });
+
+  // Backup
+  $("exp").addEventListener("click",function(){
+    var blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
+    var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download="programa-camera-ms008-backup.json"; document.body.appendChild(a); a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);
+    toast("Backup salvo");
+  });
+  $("imp").addEventListener("click",function(){$("file").click()});
+  $("file").addEventListener("change",function(e){
+    var f=e.target.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var a=JSON.parse(r.result);
+        if(!Array.isArray(a)||!a.every(function(x){return x&&x.n&&x.code})) throw 0;
+        items=a.map(function(x){return{n:String(x.n),code:String(x.code),note:String(x.note||"")}});
+        save(); render(); toast("Backup carregado");
+      }catch(err){toast("Arquivo de backup inválido")}
+    };
+    r.readAsText(f); e.target.value="";
+  });
+
+  // fechar diálogo tocando fora
+  ["viewer","editor"].forEach(function(id){
+    var d=$(id);
+    d.addEventListener("click",function(e){if(e.target===d) d.close()});
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
